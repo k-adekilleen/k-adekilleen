@@ -12,7 +12,7 @@ export default function SearchBar() {
     const searchParams = new URLSearchParams(window.location.search);
     const searchQuery = searchParams.get("q");
     if (searchQuery) {
-      setQuery(searchQuery);
+      setQuery(decodeURIComponent(searchQuery));
     }
   }, []);
 
@@ -28,8 +28,9 @@ export default function SearchBar() {
   };
 
   const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    setQuery(e.target.value);
-    if (!e.target.value.trim()) {
+    const newQuery = e.target.value;
+    setQuery(newQuery);
+    if (!newQuery.trim()) {
       setLocation("/");
     }
   };

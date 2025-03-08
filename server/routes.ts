@@ -6,9 +6,11 @@ import { insertProductSchema } from "@shared/schema";
 export async function registerRoutes(app: Express): Promise<Server> {
   app.get("/api/products", async (req, res) => {
     const query = req.query.q as string | undefined;
+    console.log("Search query received:", query); // Add debugging
     const products = query 
       ? await storage.searchProducts(query)
       : await storage.getAllProducts();
+    console.log("Found products:", products.length); // Add debugging
     res.json(products);
   });
 

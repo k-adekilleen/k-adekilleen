@@ -11,9 +11,15 @@ export default function Home() {
 
   const { data: products, isLoading } = useQuery<Product[]>({
     queryKey: ["/api/products", query],
-    queryFn: ({ signal }) => 
-      fetch(`/api/products${query ? `?q=${encodeURIComponent(query)}` : ""}`, { signal })
-        .then(res => res.json())
+    queryFn: async ({ signal }) => {
+      const url = `/api/products${query ? `?q=${encodeURIComponent(query)}` : ""}`;
+      console.log("Fetching products with URL:", url); // Debug log
+      const response = await fetch(url, { signal });
+      if (!response.ok) {
+        throw new Error(`HTTP error! status: ${response.status}`);
+      }
+      return response.json();
+    }
   });
 
   if (isLoading) {
