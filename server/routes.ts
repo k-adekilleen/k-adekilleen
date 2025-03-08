@@ -1,5 +1,6 @@
 import type { Express } from "express";
 import { createServer, type Server } from "http";
+import { WebSocketServer, WebSocket } from "ws";
 import { storage } from "./storage";
 import { insertProductSchema, insertReviewSchema } from "@shared/schema";
 
@@ -54,11 +55,45 @@ export async function registerRoutes(app: Express): Promise<Server> {
       const reviewData = { ...req.body, productId };
       const review = insertReviewSchema.parse(reviewData);
       const created = await storage.createReview(review);
+
+      // Broadcast the new review to all connected clients
+      wss.clients.forEach((client) => {
+        if (client.readyState === WebSocket.OPEN) {
+          client.send(JSON.stringify({
+            type: 'NEW_REVIEW',
+            productId,
+            review: created
+          }));
+        }
+      });
+
       res.status(201).json(created);
     } catch (error) {
       res.status(400).json({ message: "Invalid review data" });
     }
   });
 
-  return createServer(app);
+  const server = createServer(app);
+
+  // Initialize WebSocket server
+  const wss = new WebSocketServer({ server, path: '/ws' });
+
+  wss.on('connection', (ws) => {
+    console.log('New WebSocket connection');
+
+    ws.on('message', (message) => {
+      try {
+        const data = JSON.parse(message.toString());
+        console.log('Received:', data);
+      } catch (error) {
+        console.error('Failed to parse WebSocket message:', error);
+      }
+    });
+
+    ws.on('close', () => {
+      console.log('Client disconnected');
+    });
+  });
+
+  return server;
 }

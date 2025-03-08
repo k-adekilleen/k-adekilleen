@@ -16,6 +16,7 @@ import {
 import { insertReviewSchema, type Review } from "@shared/schema";
 import { queryClient, apiRequest } from "@/lib/queryClient";
 import { useToast } from "@/hooks/use-toast";
+import { useWebSocket } from "@/hooks/use-websocket";
 
 interface ProductReviewsProps {
   productId: number;
@@ -55,6 +56,16 @@ export default function ProductReviews({ productId }: ProductReviewsProps) {
 
   const { data: reviews, isLoading } = useQuery<Review[]>({
     queryKey: [`/api/products/${productId}/reviews`],
+  });
+
+  // Handle real-time updates
+  useWebSocket((data) => {
+    if (data.type === 'NEW_REVIEW' && data.productId === productId) {
+      queryClient.setQueryData<Review[]>([`/api/products/${productId}/reviews`], (oldReviews) => {
+        if (!oldReviews) return [data.review];
+        return [...oldReviews, data.review];
+      });
+    }
   });
 
   const { mutate: submitReview, isPending } = useMutation({
