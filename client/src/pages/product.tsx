@@ -7,12 +7,12 @@ import ProductReviews from "@/components/product-reviews";
 
 export default function ProductPage() {
   const { id } = useParams();
-  const productId = parseInt(id);
+  const productId = id ? parseInt(id) : 0; // Handle undefined case
 
   const { data: product, isLoading } = useQuery<Product>({
-    queryKey: [`/api/products/${id}`],
+    queryKey: [`/api/products/${productId}`],
     queryFn: ({ signal }) => 
-      fetch(`/api/products/${id}`, { signal }).then(res => res.json())
+      fetch(`/api/products/${productId}`, { signal }).then(res => res.json())
   });
 
   if (isLoading) {

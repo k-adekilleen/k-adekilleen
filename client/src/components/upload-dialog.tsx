@@ -16,15 +16,11 @@ export default function UploadDialog() {
   const [isOpen, setIsOpen] = useState(false);
   const [isCameraActive, setIsCameraActive] = useState(false);
   const webcamRef = useRef<Webcam | null>(null);
-  const codeReader = useRef<BrowserMultiFormatReader | null>(null);
+  const codeReader = useRef<BrowserMultiFormatReader>(new BrowserMultiFormatReader());
   const { toast } = useToast();
 
   const handleStartScanning = async () => {
     setIsCameraActive(true);
-
-    if (!codeReader.current) {
-      codeReader.current = new BrowserMultiFormatReader();
-    }
 
     try {
       // Start continuous scanning
