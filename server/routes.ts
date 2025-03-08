@@ -7,10 +7,28 @@ import { insertProductSchema, insertReviewSchema } from "@shared/schema";
 export async function registerRoutes(app: Express): Promise<Server> {
   app.get("/api/products", async (req, res) => {
     const query = req.query.q as string | undefined;
+    const effects = Array.isArray(req.query.effect) 
+      ? req.query.effect as string[]
+      : req.query.effect
+      ? [req.query.effect as string]
+      : [];
+
     console.log("Search query received:", query); // Add debugging
-    const products = query 
+    console.log("Effects filter:", effects); // Add debugging
+
+    let products = query 
       ? await storage.searchProducts(query)
       : await storage.getAllProducts();
+
+    // Filter by effects if specified
+    if (effects.length > 0) {
+      products = products.filter(product =>
+        effects.every(effect => 
+          product.effects.some(e => e.toLowerCase() === effect.toLowerCase())
+        )
+      );
+    }
+
     console.log("Found products:", products.length); // Add debugging
     res.json(products);
   });
