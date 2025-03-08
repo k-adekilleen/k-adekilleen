@@ -55,12 +55,21 @@ export class MemStorage implements IStorage {
   }
 
   async searchProducts(query: string): Promise<Product[]> {
-    const lowercaseQuery = query.toLowerCase();
-    return Array.from(this.products.values()).filter(product =>
-      product.name.toLowerCase().includes(lowercaseQuery) ||
-      product.brand.toLowerCase().includes(lowercaseQuery) ||
-      product.type.toLowerCase().includes(lowercaseQuery)
-    );
+    const lowercaseQuery = query.toLowerCase().trim();
+    return Array.from(this.products.values()).filter(product => {
+      // Search across all relevant text fields
+      const searchableFields = [
+        product.name,
+        product.brand,
+        product.type,
+        product.description,
+        ...product.effects,
+        ...product.flavors
+      ].map(field => field.toLowerCase());
+
+      // Return true if any field contains the search query
+      return searchableFields.some(field => field.includes(lowercaseQuery));
+    });
   }
 
   async createProduct(product: InsertProduct): Promise<Product> {

@@ -9,8 +9,8 @@ export default function SearchBar() {
 
   // Initialize search box with current query
   useEffect(() => {
-    const params = new URLSearchParams(window.location.search);
-    const searchQuery = params.get("q");
+    const searchParams = new URLSearchParams(window.location.search);
+    const searchQuery = searchParams.get("q");
     if (searchQuery) {
       setQuery(searchQuery);
     }
@@ -19,7 +19,19 @@ export default function SearchBar() {
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
     const trimmedQuery = query.trim();
-    setLocation(trimmedQuery ? `/?q=${encodeURIComponent(trimmedQuery)}` : "/");
+    if (trimmedQuery) {
+      setLocation(`/?q=${encodeURIComponent(trimmedQuery)}`);
+    } else {
+      setLocation("/");
+      setQuery("");
+    }
+  };
+
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    setQuery(e.target.value);
+    if (!e.target.value.trim()) {
+      setLocation("/");
+    }
   };
 
   return (
@@ -30,7 +42,7 @@ export default function SearchBar() {
         placeholder="Search for cannabis products..."
         className="pl-9"
         value={query}
-        onChange={(e) => setQuery(e.target.value)}
+        onChange={handleChange}
       />
     </form>
   );
