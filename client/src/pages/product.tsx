@@ -3,10 +3,12 @@ import { useParams } from "wouter";
 import { Skeleton } from "@/components/ui/skeleton";
 import { Badge } from "@/components/ui/badge";
 import type { Product } from "@shared/schema";
+import ProductReviews from "@/components/product-reviews";
 
 export default function ProductPage() {
   const { id } = useParams();
-  
+  const productId = parseInt(id);
+
   const { data: product, isLoading } = useQuery<Product>({
     queryKey: [`/api/products/${id}`],
     queryFn: ({ signal }) => 
@@ -38,7 +40,7 @@ export default function ProductPage() {
   }
 
   return (
-    <div className="max-w-4xl mx-auto">
+    <div className="max-w-4xl mx-auto space-y-12">
       <div className="grid md:grid-cols-2 gap-8">
         <img
           src={product.imageUrl}
@@ -50,7 +52,7 @@ export default function ProductPage() {
             <h1 className="text-3xl font-bold mb-2">{product.name}</h1>
             <p className="text-lg text-muted-foreground">{product.brand}</p>
           </div>
-          
+
           <div className="flex gap-4">
             <Badge className="text-lg px-4 py-1">{product.type}</Badge>
             <Badge variant="outline" className="text-lg px-4 py-1">
@@ -60,9 +62,9 @@ export default function ProductPage() {
               CBD: {product.cbdContent}
             </Badge>
           </div>
-          
+
           <p className="text-lg">{product.description}</p>
-          
+
           <div>
             <h2 className="font-semibold mb-2">Effects</h2>
             <div className="flex flex-wrap gap-2">
@@ -71,7 +73,7 @@ export default function ProductPage() {
               ))}
             </div>
           </div>
-          
+
           <div>
             <h2 className="font-semibold mb-2">Flavors</h2>
             <div className="flex flex-wrap gap-2">
@@ -82,6 +84,8 @@ export default function ProductPage() {
           </div>
         </div>
       </div>
+
+      <ProductReviews productId={productId} />
     </div>
   );
 }

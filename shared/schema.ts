@@ -15,6 +15,15 @@ export const products = pgTable("products", {
   flavors: text("flavors").array().notNull(),
 });
 
+export const reviews = pgTable("reviews", {
+  id: serial("id").primaryKey(),
+  productId: integer("product_id").notNull(),
+  rating: integer("rating").notNull(),
+  comment: text("comment").notNull(),
+  userName: text("user_name").notNull(),
+  createdAt: text("created_at").notNull(),
+});
+
 export const insertProductSchema = createInsertSchema(products).pick({
   name: true,
   brand: true,
@@ -27,5 +36,20 @@ export const insertProductSchema = createInsertSchema(products).pick({
   flavors: true,
 });
 
+export const insertReviewSchema = createInsertSchema(reviews)
+  .pick({
+    productId: true,
+    rating: true,
+    comment: true,
+    userName: true,
+  })
+  .extend({
+    rating: z.number().min(1).max(5),
+    comment: z.string().min(1, "Comment is required"),
+    userName: z.string().min(1, "Name is required"),
+  });
+
 export type InsertProduct = z.infer<typeof insertProductSchema>;
 export type Product = typeof products.$inferSelect;
+export type InsertReview = z.infer<typeof insertReviewSchema>;
+export type Review = typeof reviews.$inferSelect;

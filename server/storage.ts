@@ -1,19 +1,27 @@
-import { products, type Product, type InsertProduct } from "@shared/schema";
+import { products, type Product, type InsertProduct, reviews, type Review, type InsertReview } from "@shared/schema";
 
 export interface IStorage {
   getAllProducts(): Promise<Product[]>;
   getProduct(id: number): Promise<Product | undefined>;
   searchProducts(query: string): Promise<Product[]>;
   createProduct(product: InsertProduct): Promise<Product>;
+
+  // Review methods
+  getProductReviews(productId: number): Promise<Review[]>;
+  createReview(review: InsertReview): Promise<Review>;
 }
 
 export class MemStorage implements IStorage {
   private products: Map<number, Product>;
-  private currentId: number;
+  private reviews: Map<number, Review>;
+  private currentProductId: number;
+  private currentReviewId: number;
 
   constructor() {
     this.products = new Map();
-    this.currentId = 1;
+    this.reviews = new Map();
+    this.currentProductId = 1;
+    this.currentReviewId = 1;
     this.seedData();
   }
 
@@ -44,6 +52,24 @@ export class MemStorage implements IStorage {
     ];
 
     sampleProducts.forEach(product => this.createProduct(product));
+
+    // Add some sample reviews
+    const sampleReviews: InsertReview[] = [
+      {
+        productId: 1,
+        rating: 5,
+        comment: "Perfect for relaxation after a long day",
+        userName: "CannabisConnoisseur",
+      },
+      {
+        productId: 1,
+        rating: 4,
+        comment: "Great flavor profile, very enjoyable",
+        userName: "HerbalExplorer",
+      },
+    ];
+
+    sampleReviews.forEach(review => this.createReview(review));
   }
 
   async getAllProducts(): Promise<Product[]> {
@@ -73,10 +99,27 @@ export class MemStorage implements IStorage {
   }
 
   async createProduct(product: InsertProduct): Promise<Product> {
-    const id = this.currentId++;
+    const id = this.currentProductId++;
     const newProduct = { ...product, id };
     this.products.set(id, newProduct);
     return newProduct;
+  }
+
+  async getProductReviews(productId: number): Promise<Review[]> {
+    return Array.from(this.reviews.values()).filter(
+      review => review.productId === productId
+    );
+  }
+
+  async createReview(review: InsertReview): Promise<Review> {
+    const id = this.currentReviewId++;
+    const newReview = {
+      ...review,
+      id,
+      createdAt: new Date().toISOString(),
+    };
+    this.reviews.set(id, newReview);
+    return newReview;
   }
 }
 

@@ -1,7 +1,7 @@
 import type { Express } from "express";
 import { createServer, type Server } from "http";
 import { storage } from "./storage";
-import { insertProductSchema } from "@shared/schema";
+import { insertProductSchema, insertReviewSchema } from "@shared/schema";
 
 export async function registerRoutes(app: Express): Promise<Server> {
   app.get("/api/products", async (req, res) => {
@@ -31,6 +31,32 @@ export async function registerRoutes(app: Express): Promise<Server> {
       res.status(201).json(created);
     } catch (error) {
       res.status(400).json({ message: "Invalid product data" });
+    }
+  });
+
+  // Reviews endpoints
+  app.get("/api/products/:id/reviews", async (req, res) => {
+    const productId = parseInt(req.params.id);
+    const reviews = await storage.getProductReviews(productId);
+    res.json(reviews);
+  });
+
+  app.post("/api/products/:id/reviews", async (req, res) => {
+    try {
+      const productId = parseInt(req.params.id);
+      const product = await storage.getProduct(productId);
+
+      if (!product) {
+        res.status(404).json({ message: "Product not found" });
+        return;
+      }
+
+      const reviewData = { ...req.body, productId };
+      const review = insertReviewSchema.parse(reviewData);
+      const created = await storage.createReview(review);
+      res.status(201).json(created);
+    } catch (error) {
+      res.status(400).json({ message: "Invalid review data" });
     }
   });
 
