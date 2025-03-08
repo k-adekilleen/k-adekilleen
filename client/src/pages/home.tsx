@@ -1,17 +1,18 @@
 import { useQuery } from "@tanstack/react-query";
-import { useSearch } from "wouter";
+import { useLocation } from "wouter";
 import ProductCard from "@/components/product-card";
 import { Skeleton } from "@/components/ui/skeleton";
 import type { Product } from "@shared/schema";
 
 export default function Home() {
-  const [search] = useSearch();
-  const query = new URLSearchParams(search).get("q") || "";
-  
+  const [location] = useLocation();
+  const searchParams = new URLSearchParams(location.split('?')[1]);
+  const query = searchParams.get("q") || "";
+
   const { data: products, isLoading } = useQuery<Product[]>({
     queryKey: ["/api/products", query],
     queryFn: ({ signal }) => 
-      fetch(`/api/products${query ? `?q=${query}` : ""}`, { signal })
+      fetch(`/api/products${query ? `?q=${encodeURIComponent(query)}` : ""}`, { signal })
         .then(res => res.json())
   });
 

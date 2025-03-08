@@ -1,15 +1,25 @@
 import { Search } from "lucide-react";
 import { Input } from "@/components/ui/input";
 import { useLocation } from "wouter";
-import { useState } from "react";
+import { useState, useEffect } from "react";
 
 export default function SearchBar() {
   const [, setLocation] = useLocation();
   const [query, setQuery] = useState("");
 
+  // Initialize search box with current query
+  useEffect(() => {
+    const params = new URLSearchParams(window.location.search);
+    const searchQuery = params.get("q");
+    if (searchQuery) {
+      setQuery(searchQuery);
+    }
+  }, []);
+
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    setLocation(`/?q=${encodeURIComponent(query)}`);
+    const trimmedQuery = query.trim();
+    setLocation(trimmedQuery ? `/?q=${encodeURIComponent(trimmedQuery)}` : "/");
   };
 
   return (
