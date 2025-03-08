@@ -45,7 +45,7 @@ function StarRating({ rating }: { rating: number }) {
 export default function ProductReviews({ productId }: ProductReviewsProps) {
   const { toast } = useToast();
   const form = useForm<ReviewFormData>({
-    resolver: zodResolver(insertReviewSchema),
+    resolver: zodResolver(insertReviewSchema.omit({ productId: true })),
     defaultValues: {
       rating: 5,
       comment: "",
@@ -59,11 +59,13 @@ export default function ProductReviews({ productId }: ProductReviewsProps) {
 
   const { mutate: submitReview, isPending } = useMutation({
     mutationFn: async (data: ReviewFormData) => {
-      await apiRequest(
+      console.log("Submitting review:", { ...data, productId }); // Debug log
+      const response = await apiRequest(
         "POST",
         `/api/products/${productId}/reviews`,
-        data
+        { ...data, productId }
       );
+      return response.json();
     },
     onSuccess: () => {
       queryClient.invalidateQueries({ queryKey: [`/api/products/${productId}/reviews`] });
@@ -73,7 +75,8 @@ export default function ProductReviews({ productId }: ProductReviewsProps) {
         description: "Thank you for your feedback!",
       });
     },
-    onError: () => {
+    onError: (error) => {
+      console.error("Failed to submit review:", error); // Debug log
       toast({
         title: "Error",
         description: "Failed to submit review. Please try again.",
@@ -82,9 +85,10 @@ export default function ProductReviews({ productId }: ProductReviewsProps) {
     },
   });
 
-  const onSubmit = form.handleSubmit((data) => {
+  const onSubmit = (data: ReviewFormData) => {
+    console.log("Form data:", data); // Debug log
     submitReview(data);
-  });
+  };
 
   return (
     <div className="space-y-8">
@@ -116,7 +120,7 @@ export default function ProductReviews({ productId }: ProductReviewsProps) {
       <div className="border rounded-lg p-6">
         <h3 className="text-lg font-semibold mb-4">Write a Review</h3>
         <Form {...form}>
-          <form onSubmit={onSubmit} className="space-y-4">
+          <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
             <FormField
               control={form.control}
               name="userName"
@@ -136,7 +140,7 @@ export default function ProductReviews({ productId }: ProductReviewsProps) {
               name="rating"
               render={({ field }) => (
                 <FormItem>
-                  <FormLabel>Rating</FormLabel>
+                  <FormLabel>Rating (1-5)</FormLabel>
                   <FormControl>
                     <Input
                       type="number"
