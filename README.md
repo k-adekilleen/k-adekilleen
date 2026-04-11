@@ -1,6 +1,5 @@
 ## 👋
 
 
-Business, engineering, and analytics.
-Working in operations, logistics, and defense tech.
-Solving problems.
+Working in business, engineering, and analytics.
+Solving problems in operations, logistics, and defense tech.
