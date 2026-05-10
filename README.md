@@ -1,5 +1,4 @@
 ## 👋
 
 
-Working in business, engineering, and analytics.
-Solving problems in operations, logistics, and defense tech.
+Engineering systems for global logistics and defense tech.
